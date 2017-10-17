@@ -1,0 +1,11 @@
+logging:
+  level:
+    org.springframework.web: WARN
+    com.ote.test: INFO
+
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: Server

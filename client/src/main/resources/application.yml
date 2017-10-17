@@ -1,0 +1,14 @@
+logging:
+  level:
+    org.springframework.web: WARN
+    com.ote.test: INFO
+
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: Client
+
+service:
+  url: http://localhost:7070/server

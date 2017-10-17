@@ -1,0 +1,16 @@
+logging:
+  level:
+    org.springframework.web: WARN
+    com.ote.test: INFO
+
+server:
+  port: ${PORT:7070}
+
+spring:
+  application:
+    name: ApiGateway
+
+zuul:
+  routes:
+    server:
+      url: http://localhost:8080
