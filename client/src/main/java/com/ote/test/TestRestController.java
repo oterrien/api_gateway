@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class TestRestController {
 
-    @Value(value = "${service.url}")
-    private String serviceUrl;
+    @Value(value = "${gateway.url}")
+    private String gatewayUrl;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -28,6 +28,6 @@ public class TestRestController {
     @RequestMapping(value = "/remote-test", method = RequestMethod.GET)
     public boolean ping() {
         log.info("Ping #" + count.getAndIncrement());
-        return restTemplate.getForObject(serviceUrl + "/api/v1/test", Boolean.class);
+        return restTemplate.getForObject(gatewayUrl + "/server" + "/api/v1/test", Boolean.class);
     }
 }

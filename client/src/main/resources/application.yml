@@ -10,5 +10,5 @@ spring:
   application:
     name: Client
 
-service:
-  url: http://localhost:7070/server
+gateway:
+  url: http://localhost:7070

@@ -14,3 +14,6 @@ zuul:
   routes:
     server:
       url: http://localhost:8080
+      swagger-uri: /v2/api-docs
+    client:
+      url: http://localhost:8081

@@ -2,8 +2,12 @@ package com.ote.test;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import io.swagger.models.HttpMethod;
+import io.swagger.models.Swagger;
+import io.swagger.parser.SwaggerParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.zuul.filters.Route;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.http.HttpStatus;
@@ -12,10 +16,15 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 public class ZuulFilterOnServerSwagger extends ZuulFilter {
+
+    @Value("${zuul.routes.server.swagger-uri}")
+    private String swaggerUri;
+
+    private static final String ContextPath = "/server";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -28,8 +37,6 @@ public class ZuulFilterOnServerSwagger extends ZuulFilter {
      * - route filters can handle the actual routing of the request,
      * - post filters are executed after the request has been routed,
      * - error filters execute if an error occurs in the course of handling the request.
-     *
-     * @return
      */
     @Override
     public String filterType() {
@@ -49,38 +56,29 @@ public class ZuulFilterOnServerSwagger extends ZuulFilter {
     @Override
     public Object run() {
 
-        String zuulServerContextPath = "/server";
-
         RequestContext requestContext = RequestContext.getCurrentContext();
         HttpServletRequest request = requestContext.getRequest();
 
         String requestUri = URI.create(request.getRequestURI()).getPath();
-        String requestPrefix = requestUri.replaceAll(zuulServerContextPath, "");
 
-        Route matchingRoute = routeLocator.getMatchingRoute(zuulServerContextPath);
-        String location = matchingRoute.getLocation();
+        if (requestUri.startsWith(ContextPath)) {
 
-        log.info(String.format("%s request to %s", request.getMethod(), request.getRequestURL().toString()));
-        try {
-            // Call swagger for server
-            Map serverSwagger = restTemplate.getForObject(location + "/v2/api-docs", Map.class);
+            String apiUri = requestUri.replaceAll(ContextPath, "");
 
-            // Get all paths
-            Map paths = (Map) serverSwagger.get("paths");
+            Route matchingRoute = routeLocator.getMatchingRoute(ContextPath);
+            String location = matchingRoute.getLocation();
+            HttpMethod method = HttpMethod.valueOf(request.getMethod());
 
-            // Check URI exists
-            Map uri = (Map) paths.get(requestPrefix);
-            if (uri == null) {
+            Swagger swagger = new SwaggerParser().read(location + swaggerUri);
+
+            if (!Optional.ofNullable(swagger.getPath(apiUri)).
+                    filter(p -> p.getOperationMap().containsKey(method)).isPresent()) {
+                log.info(String.format("%s request to %s REJECTED", request.getMethod(), request.getRequestURL().toString()));
                 return respondNotFound(requestContext);
             }
 
-            // Check method available for this URI
-            Map method = (Map) uri.get(request.getMethod().toLowerCase());
-            if (method == null) {
-                return respondNotFound(requestContext);
-            }
-        } catch (Exception e) {
-            return respondNotFound(requestContext);
+            log.info(String.format("%s request to %s", request.getMethod(), request.getRequestURL().toString()));
+
         }
         return null;
     }
