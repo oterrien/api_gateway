@@ -17,15 +17,5 @@ public class ApiGatewayApplication {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
-    }
-
-    /*@Bean
-    public ServiceSwaggerFilter serviceSwaggerFilter(DiscoveryClientRouteLocator routeLocator) {
-        return new ServiceSwaggerFilter(routeLocator);
-    }*/
-
-    @Bean
-    public ZuulFilterOnServerSwagger serviceSwaggerFilter() {
-        return new ZuulFilterOnServerSwagger();
-    }
+    }  
 }
