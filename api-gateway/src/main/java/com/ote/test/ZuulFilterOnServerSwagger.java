@@ -13,11 +13,13 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Optional;
 
+@Component
 @Slf4j
 public class ZuulFilterOnServerSwagger extends ZuulFilter {
 
